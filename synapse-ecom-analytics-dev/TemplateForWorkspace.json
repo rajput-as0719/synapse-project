@@ -342,7 +342,7 @@
 			"apiVersion": "2019-06-01-preview",
 			"properties": {
 				"content": {
-					"query": "CREATE EXTERNAL DATA SOURCE bronze_source\nWITH (\n   LOCATION = 'https://ecomdevstorage1.blob.core.windows.net/bronze/' \n)\n\nCREATE EXTERNAL FILE FORMAT DeltaFormat\nWITH(\n    FORMAT_TYPE = DELTA\n)\n\nCREATE EXTERNAL TABLE dbo.customers\n(\n    customer_id       INT NULL,\n    tax_id            FLOAT NULL,\n    tax_code          NVARCHAR(50) NULL,\n    customer_name     NVARCHAR(200) NULL,\n    state             NVARCHAR(100) NULL,\n    city              NVARCHAR(100) NULL,\n    postcode          NVARCHAR(20) NULL,\n    street            NVARCHAR(200) NULL,\n    number            NVARCHAR(20) NULL,\n    unit              NVARCHAR(50) NULL,\n    region            NVARCHAR(100) NULL,\n    district          NVARCHAR(100) NULL,\n    lon               FLOAT NULL,\n    lat               FLOAT NULL,\n    ship_to_address   NVARCHAR(300) NULL,\n    valid_from        INT NULL,\n    valid_to          FLOAT NULL,\n    units_purchased   INT NULL,\n    loyalty_segment   INT NULL,\n    file_path         NVARCHAR(500) NULL,\n    last_updated_ts   DATETIME NULL\n)\nWITH (\n    LOCATION = 'customers/',\n    DATA_SOURCE = bronze_source,\n    FILE_FORMAT = DeltaFormat\n)\n\nSELECT TOP 10 * from [dbo].[customers]\n\n------------------------\n\nCREATE EXTERNAL TABLE dbo.sales_orders\n(\n    clicked_items         NVARCHAR(500) NULL,\n    customer_id           INT NULL,\n    customer_name         NVARCHAR(200) NULL,\n    number_of_line_items  INT NULL,\n    order_datetime        FLOAT NULL,\n    order_number          INT NULL,\n    ordered_products      NVARCHAR(500) NULL,\n    promo_info            NVARCHAR(500) NULL,\n    last_update_ts        DATETIME NULL,\n    file_path             NVARCHAR(500) NULL\n)\nWITH (\n    LOCATION = 'sales_orders/',\n    DATA_SOURCE = bronze_source,\n    FILE_FORMAT = DeltaFormat\n);\n\nCREATE EXTERNAL TABLE dbo.sales\n(\n    customer_id       INT NULL,\n    customer_name     NVARCHAR(200) NULL,\n    product_name      NVARCHAR(200) NULL,\n    order_date        DATE NULL,\n    product_category  NVARCHAR(100) NULL,\n    product           NVARCHAR(200) NULL,\n    total_price       INT NULL,\n    last_update_ts    DATETIME NULL,\n    file_path         NVARCHAR(500) NULL\n)\nWITH (\n    LOCATION = 'sales/',\n    DATA_SOURCE = bronze_source,\n    FILE_FORMAT = DeltaFormat\n);\n",
+					"query": "CREATE EXTERNAL DATA SOURCE bronze_source\nWITH (\n   LOCATION = 'https://ecomdevstorage1.blob.core.windows.net/bronze/' \n)\n\nCREATE EXTERNAL FILE FORMAT DeltaFormat\nWITH(\n    FORMAT_TYPE = DELTA\n)\n------------------------------------\n\nCREATE EXTERNAL TABLE dbo.customers\n(\n    customer_id       INT NULL,\n    tax_id            NVARCHAR(200) NULL,\n    tax_code          NVARCHAR(50) NULL,\n    customer_name     NVARCHAR(200) NULL,\n    state             NVARCHAR(100) NULL,\n    city              NVARCHAR(100) NULL,\n    postcode          NVARCHAR(20) NULL,\n    street            NVARCHAR(200) NULL,\n    number            NVARCHAR(100) NULL,\n    unit              NVARCHAR(50) NULL,\n    region            NVARCHAR(100) NULL,\n    district          NVARCHAR(100) NULL,\n    lon               FLOAT NULL,\n    lat               FLOAT NULL,\n    ship_to_address   NVARCHAR(300) NULL,\n    valid_from        INT NULL,\n    valid_to          NVARCHAR(100) NULL,\n    units_purchased   INT NULL,\n    loyalty_segment   INT NULL,\n    file_path         NVARCHAR(500) NULL,\n    last_updated_ts   DATETIME NULL\n)\nWITH (\n    LOCATION = 'customers/',\n    DATA_SOURCE = bronze_source,\n    FILE_FORMAT = DeltaFormat\n);\n\nCREATE EXTERNAL TABLE dbo.sales\n(\n    customer_id       INT NULL,\n    customer_name     NVARCHAR(200) NULL,\n    product_name      NVARCHAR(200) NULL,\n    order_date        DATE NULL,\n    product_category  NVARCHAR(100) NULL,\n    product           NVARCHAR(200) NULL,\n    total_price       VARCHAR(8000) NULL,\n    file_path         NVARCHAR(500) NULL,\n    last_update_ts    DATETIME NULL\n)\nWITH (\n    LOCATION = 'sales/',\n    DATA_SOURCE = bronze_source,\n    FILE_FORMAT = DeltaFormat\n);\n\nCREATE EXTERNAL TABLE dbo.sales_orders\n(\n    clicked_items         NVARCHAR(500) NULL,\n    customer_id           NVARCHAR(500) NULL,\n    customer_name         NVARCHAR(200) NULL,\n    number_of_line_items  NVARCHAR(200) NULL,\n    order_datetime        NVARCHAR(200) NULL,\n    order_number          NVARCHAR(200) NULL,\n    ordered_products      NVARCHAR(500) NULL,\n    promo_info            NVARCHAR(500) NULL,\n    file_path             NVARCHAR(500) NULL,\n    last_update_ts        DATETIME NULL\n)\nWITH (\n    LOCATION = 'sales_orders/',\n    DATA_SOURCE = bronze_source,\n    FILE_FORMAT = DeltaFormat\n);\n\n\nSELECT TOP 10 * FROM customers\n\n",
 					"metadata": {
 						"language": "sql"
 					},
@@ -373,6 +373,72 @@
 					"resultLimit": 5000
 				},
 				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/Notebook 1')]",
+			"type": "Microsoft.Synapse/workspaces/notebooks",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"nbformat": 4,
+				"nbformat_minor": 2,
+				"bigDataPool": {
+					"referenceName": "sparkpool",
+					"type": "BigDataPoolReference"
+				},
+				"sessionProperties": {
+					"driverMemory": "56g",
+					"driverCores": 8,
+					"executorMemory": "56g",
+					"executorCores": 8,
+					"numExecutors": 1,
+					"conf": {
+						"spark.dynamicAllocation.enabled": "true",
+						"spark.dynamicAllocation.minExecutors": "1",
+						"spark.dynamicAllocation.maxExecutors": "4",
+						"spark.autotune.trackingId": "d04bf701-6c6f-4cd8-a887-d0ed8d42afce"
+					}
+				},
+				"metadata": {
+					"saveOutput": true,
+					"enableDebugMode": false,
+					"kernelspec": {
+						"name": "synapse_pyspark",
+						"display_name": "Synapse PySpark"
+					},
+					"language_info": {
+						"name": "python"
+					},
+					"a365ComputeOptions": {
+						"id": "/subscriptions/63e66dd7-d522-404c-b35b-f557c7f8143c/resourceGroups/ecommerce_analytics/providers/Microsoft.Synapse/workspaces/synapse-ecom-analytics-dev/bigDataPools/sparkpool",
+						"name": "sparkpool",
+						"type": "Spark",
+						"endpoint": "https://synapse-ecom-analytics-dev.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/sparkpool",
+						"auth": {
+							"type": "AAD",
+							"authResource": "https://dev.azuresynapse.net"
+						},
+						"sparkVersion": "3.5",
+						"nodeCount": 3,
+						"cores": 8,
+						"memory": 56
+					},
+					"sessionKeepAliveTimeout": 30
+				},
+				"cells": [
+					{
+						"cell_type": "code",
+						"source": [
+							"spark.read.format(\"delta\")\\\n",
+							"    .load(\"abfss://bronze@ecomdevstorage1.dfs.core.windows.net/sales_orders/\")\\\n",
+							"    .printSchema()\n",
+							""
+						],
+						"outputs": [],
+						"execution_count": null
+					}
+				]
 			},
 			"dependsOn": []
 		},
@@ -494,7 +560,7 @@
 						"spark.dynamicAllocation.enabled": "false",
 						"spark.dynamicAllocation.minExecutors": "9",
 						"spark.dynamicAllocation.maxExecutors": "9",
-						"spark.autotune.trackingId": "7d328758-4882-4371-b795-8a723f17debe"
+						"spark.autotune.trackingId": "04e468df-7708-4db2-bb2a-89679d589fe3"
 					}
 				},
 				"metadata": {
@@ -537,7 +603,7 @@
 							"target_folders = \"customers\"\n",
 							"'''\n",
 							"\n",
-							"print (f\"Data processing started {source_folders}\")\n",
+							"print (f\"Data processing started for: {source_folders}\")\n",
 							"\n",
 							"df = spark.read.format(\"csv\")\\\n",
 							"        .option(\"header\",\"true\")\\\n",
