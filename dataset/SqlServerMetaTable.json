@@ -1,0 +1,33 @@
+{
+	"name": "SqlServerMetaTable",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LS_SqlServer1",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "SqlServerTable",
+		"schema": [
+			{
+				"name": "source_container",
+				"type": "nvarchar"
+			},
+			{
+				"name": "source_folders",
+				"type": "nvarchar"
+			},
+			{
+				"name": "target_container",
+				"type": "nvarchar"
+			},
+			{
+				"name": "target_folders",
+				"type": "nvarchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "meta_ingestion_pl"
+		}
+	}
+}

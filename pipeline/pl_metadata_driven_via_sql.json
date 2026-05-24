@@ -1,9 +1,9 @@
 {
-	"name": "Pipeline 1",
+	"name": "pl_metadata_driven_via_sql",
 	"properties": {
 		"activities": [
 			{
-				"name": "Lookup1",
+				"name": "LookupMetadata",
 				"type": "Lookup",
 				"dependsOn": [],
 				"policy": {
@@ -13,14 +13,26 @@
 					"secureOutput": false,
 					"secureInput": false
 				},
-				"userProperties": []
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "SqlServerSource",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "SqlServerMetaTable",
+						"type": "DatasetReference"
+					},
+					"firstRowOnly": false
+				}
 			},
 			{
-				"name": "ForEach1",
+				"name": "ForEachRowInTable",
 				"type": "ForEach",
 				"dependsOn": [
 					{
-						"activity": "Lookup1",
+						"activity": "LookupMetadata",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -28,9 +40,13 @@
 				],
 				"userProperties": [],
 				"typeProperties": {
+					"items": {
+						"value": "@activity('LookupMetadata').output.value",
+						"type": "Expression"
+					},
 					"activities": [
 						{
-							"name": "Notebook1",
+							"name": "metadata_driven_pl_notebook",
 							"type": "SynapseNotebook",
 							"dependsOn": [],
 							"policy": {
@@ -43,15 +59,49 @@
 							"userProperties": [],
 							"typeProperties": {
 								"notebook": {
-									"referenceName": "nb_bronze_ingestion",
+									"referenceName": "nb_bronze_ingestion_pl_driven",
 									"type": "NotebookReference"
 								},
 								"parameters": {
-									"undefined": {
-										"value": ""
+									"source_container": {
+										"value": {
+											"value": "@item().source_container",
+											"type": "Expression"
+										},
+										"type": "string"
+									},
+									"source_folders": {
+										"value": {
+											"value": "@item().source_folders",
+											"type": "Expression"
+										},
+										"type": "string"
+									},
+									"target_container": {
+										"value": {
+											"value": "@item().target_container",
+											"type": "Expression"
+										},
+										"type": "string"
+									},
+									"target_folders": {
+										"value": {
+											"value": "@item().target_folders",
+											"type": "Expression"
+										},
+										"type": "string"
 									}
 								},
-								"snapshot": true
+								"snapshot": true,
+								"sparkPool": {
+									"referenceName": "sparkpool",
+									"type": "BigDataPoolReference"
+								},
+								"executorSize": "Small",
+								"conf": {
+									"spark.dynamicAllocation.enabled": true
+								},
+								"driverSize": "Small"
 							}
 						}
 					]
