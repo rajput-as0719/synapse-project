@@ -5,14 +5,11 @@
 		"workspaceName": {
 			"value": "synapse-ecom-analytics-dev"
 		},
-		"synapse-ecom-analytics-dev-WorkspaceDefaultSqlServer_connectionString": {
-			"value": "Integrated Security=False;Encrypt=True;Connection Timeout=30;Data Source=tcp:synapse-ecom-analytics-dev.sql.azuresynapse.net,1433;Initial Catalog=@{linkedService().DBName}"
-		},
 		"LS_SqlServer1_password": {
 			"value": ""
 		},
-		"synapse-ecom-analytics-dev-WorkspaceDefaultStorage_properties_typeProperties_url": {
-			"value": "https://synapseashish.dfs.core.windows.net"
+		"synapse-ecom-analytics-dev-WorkspaceDefaultSqlServer_connectionString": {
+			"value": "Integrated Security=False;Encrypt=True;Connection Timeout=30;Data Source=tcp:synapse-ecom-analytics-dev.sql.azuresynapse.net,1433;Initial Catalog=@{linkedService().DBName}"
 		},
 		"LS_SqlServer1_properties_typeProperties_server": {
 			"value": "ecommerce-analytics.database.windows.net"
@@ -22,6 +19,9 @@
 		},
 		"LS_SqlServer1_properties_typeProperties_userName": {
 			"value": "ashish_singh"
+		},
+		"synapse-ecom-analytics-dev-WorkspaceDefaultStorage_properties_typeProperties_url": {
+			"value": "https://synapseashish.dfs.core.windows.net"
 		}
 	}
 }
