@@ -1,0 +1,554 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"workspaceName": {
+			"type": "string",
+			"metadata": "Workspace name",
+			"defaultValue": "synapse-ecom-analytics-dev"
+		},
+		"synapse-ecom-analytics-dev-WorkspaceDefaultSqlServer_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'synapse-ecom-analytics-dev-WorkspaceDefaultSqlServer'",
+			"defaultValue": "Integrated Security=False;Encrypt=True;Connection Timeout=30;Data Source=tcp:synapse-ecom-analytics-dev.sql.azuresynapse.net,1433;Initial Catalog=@{linkedService().DBName}"
+		},
+		"LS_SqlServer1_password": {
+			"type": "secureString",
+			"metadata": "Secure string for 'password' of 'LS_SqlServer1'"
+		},
+		"synapse-ecom-analytics-dev-WorkspaceDefaultStorage_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://synapseashish.dfs.core.windows.net"
+		},
+		"LS_SqlServer1_properties_typeProperties_server": {
+			"type": "string",
+			"defaultValue": "ecommerce-analytics.database.windows.net"
+		},
+		"LS_SqlServer1_properties_typeProperties_database": {
+			"type": "string",
+			"defaultValue": "ecom_database"
+		},
+		"LS_SqlServer1_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "ashish_singh"
+		}
+	},
+	"variables": {
+		"workspaceId": "[concat('Microsoft.Synapse/workspaces/', parameters('workspaceName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('workspaceName'), '/synapse-ecom-analytics-dev-WorkspaceDefaultSqlServer')]",
+			"type": "Microsoft.Synapse/workspaces/linkedServices",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"parameters": {
+					"DBName": {
+						"type": "String"
+					}
+				},
+				"annotations": [],
+				"type": "AzureSqlDW",
+				"typeProperties": {
+					"connectionString": "[parameters('synapse-ecom-analytics-dev-WorkspaceDefaultSqlServer_connectionString')]"
+				},
+				"connectVia": {
+					"referenceName": "AutoResolveIntegrationRuntime",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/synapse-ecom-analytics-dev-WorkspaceDefaultStorage')]",
+			"type": "Microsoft.Synapse/workspaces/linkedServices",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobFS",
+				"typeProperties": {
+					"url": "[parameters('synapse-ecom-analytics-dev-WorkspaceDefaultStorage_properties_typeProperties_url')]"
+				},
+				"connectVia": {
+					"referenceName": "AutoResolveIntegrationRuntime",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/AutoResolveIntegrationRuntime')]",
+			"type": "Microsoft.Synapse/workspaces/integrationRuntimes",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"type": "Managed",
+				"typeProperties": {
+					"computeProperties": {
+						"location": "AutoResolve",
+						"dataFlowProperties": {
+							"computeType": "General",
+							"coreCount": 8,
+							"timeToLive": 0
+						}
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/WorkspaceSystemIdentity')]",
+			"type": "Microsoft.Synapse/workspaces/credentials",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"type": "ManagedIdentity",
+				"typeProperties": {}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/nb_bronze_ingestion_pl_driven')]",
+			"type": "Microsoft.Synapse/workspaces/notebooks",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"nbformat": 4,
+				"nbformat_minor": 2,
+				"bigDataPool": {
+					"referenceName": "sparkpool",
+					"type": "BigDataPoolReference"
+				},
+				"sessionProperties": {
+					"driverMemory": "56g",
+					"driverCores": 8,
+					"executorMemory": "56g",
+					"executorCores": 8,
+					"numExecutors": 9,
+					"conf": {
+						"spark.dynamicAllocation.enabled": "false",
+						"spark.dynamicAllocation.minExecutors": "9",
+						"spark.dynamicAllocation.maxExecutors": "9",
+						"spark.autotune.trackingId": "34f6711b-df59-44e2-b212-f790bf7b8bb3"
+					}
+				},
+				"metadata": {
+					"saveOutput": true,
+					"enableDebugMode": false,
+					"kernelspec": {
+						"name": "synapse_pyspark",
+						"display_name": "Synapse PySpark"
+					},
+					"language_info": {
+						"name": "python"
+					},
+					"a365ComputeOptions": {
+						"id": "/subscriptions/63e66dd7-d522-404c-b35b-f557c7f8143c/resourceGroups/ecommerce_analytics/providers/Microsoft.Synapse/workspaces/synapse-ecom-analytics-dev/bigDataPools/sparkpool",
+						"name": "sparkpool",
+						"type": "Spark",
+						"endpoint": "https://synapse-ecom-analytics-dev.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/sparkpool",
+						"auth": {
+							"type": "AAD",
+							"authResource": "https://dev.azuresynapse.net"
+						},
+						"sparkVersion": "3.5",
+						"nodeCount": 3,
+						"cores": 8,
+						"memory": 56,
+						"automaticScaleJobs": true
+					},
+					"sessionKeepAliveTimeout": 30
+				},
+				"cells": [
+					{
+						"cell_type": "code",
+						"metadata": {},
+						"source": [
+							"from pyspark.sql.functions import *\n",
+							"from pyspark.sql.types import *\n",
+							"\n",
+							"source_container = \"retail-data\"\n",
+							"source_folders = \"customers\"\n",
+							"target_container = \"bronze\"\n",
+							"target_folders = \"customers\"\n",
+							"\n",
+							"print (f\"Data processing started {source_folders}\")\n",
+							"\n",
+							"df = spark.read.format(\"csv\")\\\n",
+							"        .option(\"header\",\"true\")\\\n",
+							"        .option(\"inferSchema\",\"true\")\\\n",
+							"        .load(f\"abfss://{source_container}@ecomdevstorage1.dfs.core.windows.net/{source_folders}/*\")\n",
+							"    \n",
+							"print(f\"Read completed for {source_folders} in {source_container} container. Now adding tow metadata columns to {source_folders}.\")\n",
+							"\n",
+							"df = df\\\n",
+							"        .withColumn(\"file_path\", input_file_name())\\\n",
+							"        .withColumn(\"last_updated_ts\", current_timestamp())\n",
+							"    \n",
+							"print(f\"Metadata columns added successfully. Now writing {target_folders} to {target_container} container.\")\n",
+							"\n",
+							"df.write\\\n",
+							"    .format(\"delta\")\\\n",
+							"    .mode(\"overwrite\")\\\n",
+							"    .save(f\"abfss://{target_container}@ecomdevstorage1.dfs.core.windows.net/{target_folders}/\")\n",
+							"    \n",
+							"print(f\"Write completed for {target_folders} in {target_container} container.\")\n",
+							"\n",
+							"print(f\"Data processing completed successfully all {target_folders} in {target_container}\")"
+						],
+						"outputs": [],
+						"execution_count": null
+					}
+				]
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/sparkpool')]",
+			"type": "Microsoft.Synapse/workspaces/bigDataPools",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"autoPause": {
+					"enabled": true,
+					"delayInMinutes": 15
+				},
+				"autoScale": {
+					"enabled": true,
+					"maxNodeCount": 10,
+					"minNodeCount": 3
+				},
+				"nodeCount": 0,
+				"nodeSize": "Small",
+				"nodeSizeFamily": "MemoryOptimized",
+				"sparkVersion": "3.5",
+				"isComputeIsolationEnabled": false,
+				"sessionLevelPackagesEnabled": true,
+				"annotations": []
+			},
+			"dependsOn": [],
+			"location": "centralindia"
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/sql_pool')]",
+			"type": "Microsoft.Synapse/workspaces/sqlPools",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"collation": "SQL_Latin1_General_CP1_CI_AS",
+				"maxSizeBytes": 263882790666240,
+				"annotations": []
+			},
+			"dependsOn": [],
+			"location": "centralindia"
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/script_bronze_tables')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "CREATE EXTERNAL DATA SOURCE bronze_source\nWITH (\n   LOCATION = 'https://ecomdevstorage1.blob.core.windows.net/bronze/' \n)\n\nCREATE EXTERNAL FILE FORMAT DeltaFormat\nWITH(\n    FORMAT_TYPE = DELTA\n)\n\nCREATE EXTERNAL TABLE dbo.customers\n(\n    customer_id       INT NULL,\n    tax_id            FLOAT NULL,\n    tax_code          NVARCHAR(50) NULL,\n    customer_name     NVARCHAR(200) NULL,\n    state             NVARCHAR(100) NULL,\n    city              NVARCHAR(100) NULL,\n    postcode          NVARCHAR(20) NULL,\n    street            NVARCHAR(200) NULL,\n    number            NVARCHAR(20) NULL,\n    unit              NVARCHAR(50) NULL,\n    region            NVARCHAR(100) NULL,\n    district          NVARCHAR(100) NULL,\n    lon               FLOAT NULL,\n    lat               FLOAT NULL,\n    ship_to_address   NVARCHAR(300) NULL,\n    valid_from        INT NULL,\n    valid_to          FLOAT NULL,\n    units_purchased   INT NULL,\n    loyalty_segment   INT NULL,\n    file_path         NVARCHAR(500) NULL,\n    last_updated_ts   DATETIME NULL\n)\nWITH (\n    LOCATION = 'customers/',\n    DATA_SOURCE = bronze_source,\n    FILE_FORMAT = DeltaFormat\n)\n\nSELECT TOP 10 * from [dbo].[customers]\n\n------------------------\n\nCREATE EXTERNAL TABLE dbo.sales_orders\n(\n    clicked_items         NVARCHAR(500) NULL,\n    customer_id           INT NULL,\n    customer_name         NVARCHAR(200) NULL,\n    number_of_line_items  INT NULL,\n    order_datetime        FLOAT NULL,\n    order_number          INT NULL,\n    ordered_products      NVARCHAR(500) NULL,\n    promo_info            NVARCHAR(500) NULL,\n    last_update_ts        DATETIME NULL,\n    file_path             NVARCHAR(500) NULL\n)\nWITH (\n    LOCATION = 'sales_orders/',\n    DATA_SOURCE = bronze_source,\n    FILE_FORMAT = DeltaFormat\n);\n\nCREATE EXTERNAL TABLE dbo.sales\n(\n    customer_id       INT NULL,\n    customer_name     NVARCHAR(200) NULL,\n    product_name      NVARCHAR(200) NULL,\n    order_date        DATE NULL,\n    product_category  NVARCHAR(100) NULL,\n    product           NVARCHAR(200) NULL,\n    total_price       INT NULL,\n    last_update_ts    DATETIME NULL,\n    file_path         NVARCHAR(500) NULL\n)\nWITH (\n    LOCATION = 'sales/',\n    DATA_SOURCE = bronze_source,\n    FILE_FORMAT = DeltaFormat\n);\n",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "bronze_db",
+						"poolName": "Built-in"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/pl_metadata_driven_via_sql')]",
+			"type": "Microsoft.Synapse/workspaces/pipelines",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"activities": [
+					{
+						"name": "LookupMetadata",
+						"type": "Lookup",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "SqlServerSource",
+								"queryTimeout": "02:00:00",
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "SqlServerMetaTable",
+								"type": "DatasetReference",
+								"parameters": {}
+							},
+							"firstRowOnly": false
+						}
+					},
+					{
+						"name": "ForEachRowInTable",
+						"type": "ForEach",
+						"dependsOn": [
+							{
+								"activity": "LookupMetadata",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@activity('LookupMetadata').output.value",
+								"type": "Expression"
+							},
+							"activities": [
+								{
+									"name": "metadata_driven_pl_notebook",
+									"type": "SynapseNotebook",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"notebook": {
+											"referenceName": "nb_bronze_ingestion_pl_driven",
+											"type": "NotebookReference"
+										},
+										"parameters": {
+											"source_container": {
+												"value": {
+													"value": "@item().source_container",
+													"type": "Expression"
+												},
+												"type": "string"
+											},
+											"source_folders": {
+												"value": {
+													"value": "@item().source_folders",
+													"type": "Expression"
+												},
+												"type": "string"
+											},
+											"target_container": {
+												"value": {
+													"value": "@item().target_container",
+													"type": "Expression"
+												},
+												"type": "string"
+											},
+											"target_folders": {
+												"value": {
+													"value": "@item().target_folders",
+													"type": "Expression"
+												},
+												"type": "string"
+											}
+										},
+										"snapshot": true,
+										"sparkPool": {
+											"referenceName": "sparkpool",
+											"type": "BigDataPoolReference"
+										},
+										"executorSize": "Small",
+										"conf": {
+											"spark.dynamicAllocation.enabled": true
+										},
+										"driverSize": "Small"
+									}
+								}
+							]
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/datasets/SqlServerMetaTable')]",
+				"[concat(variables('workspaceId'), '/notebooks/nb_bronze_ingestion_pl_driven')]",
+				"[concat(variables('workspaceId'), '/bigDataPools/sparkpool')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/LS_SqlServer1')]",
+			"type": "Microsoft.Synapse/workspaces/linkedServices",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"annotations": [],
+				"type": "SqlServer",
+				"typeProperties": {
+					"server": "[parameters('LS_SqlServer1_properties_typeProperties_server')]",
+					"database": "[parameters('LS_SqlServer1_properties_typeProperties_database')]",
+					"encrypt": "mandatory",
+					"trustServerCertificate": false,
+					"authenticationType": "SQL",
+					"userName": "[parameters('LS_SqlServer1_properties_typeProperties_userName')]",
+					"password": {
+						"type": "SecureString",
+						"value": "[parameters('LS_SqlServer1_password')]"
+					}
+				},
+				"connectVia": {
+					"referenceName": "AutoResolveIntegrationRuntime",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/nb_bronze_ingestion')]",
+			"type": "Microsoft.Synapse/workspaces/notebooks",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"nbformat": 4,
+				"nbformat_minor": 2,
+				"bigDataPool": {
+					"referenceName": "sparkpool",
+					"type": "BigDataPoolReference"
+				},
+				"sessionProperties": {
+					"driverMemory": "28g",
+					"driverCores": 4,
+					"executorMemory": "28g",
+					"executorCores": 4,
+					"numExecutors": 2,
+					"conf": {
+						"spark.dynamicAllocation.enabled": "false",
+						"spark.dynamicAllocation.minExecutors": "2",
+						"spark.dynamicAllocation.maxExecutors": "2",
+						"spark.autotune.trackingId": "e7154b71-5529-411c-8fcb-b878d61987fa"
+					}
+				},
+				"metadata": {
+					"saveOutput": true,
+					"enableDebugMode": false,
+					"kernelspec": {
+						"name": "synapse_pyspark",
+						"display_name": "Synapse PySpark"
+					},
+					"language_info": {
+						"name": "python"
+					},
+					"a365ComputeOptions": {
+						"id": "/subscriptions/63e66dd7-d522-404c-b35b-f557c7f8143c/resourceGroups/ecommerce_analytics/providers/Microsoft.Synapse/workspaces/synapse-ecom-analytics-dev/bigDataPools/sparkpool",
+						"name": "sparkpool",
+						"type": "Spark",
+						"endpoint": "https://synapse-ecom-analytics-dev.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/sparkpool",
+						"auth": {
+							"type": "AAD",
+							"authResource": "https://dev.azuresynapse.net"
+						},
+						"sparkVersion": "3.5",
+						"nodeCount": 3,
+						"cores": 8,
+						"memory": 56,
+						"automaticScaleJobs": true
+					},
+					"sessionKeepAliveTimeout": 30
+				},
+				"cells": [
+					{
+						"cell_type": "code",
+						"metadata": {},
+						"source": [
+							"from pyspark.sql.functions import *\n",
+							"from pyspark.sql.types import *\n",
+							"\n",
+							"source_container = \"retail-data\"\n",
+							"target_container = \"bronze\"\n",
+							"entities = [\"customers\",\"sales\",\"sales_orders\"]\n",
+							"\n",
+							"def add_metadata_columns(df):\n",
+							"    df = df\\\n",
+							"        .withColumn(\"file_path\", input_file_name())\\\n",
+							"        .withColumn(\"last_updated_ts\", current_timestamp())\n",
+							"    return df\n",
+							"\n",
+							"for entity in entities:\n",
+							"    print (f\"Data processing started for entity: {entity}\")\n",
+							"\n",
+							"    df = spark.read.format(\"csv\")\\\n",
+							"        .option(\"header\",\"true\")\\\n",
+							"        .option(\"inferSchema\",\"true\")\\\n",
+							"        .load(f\"abfss://{source_container}@ecomdevstorage1.dfs.core.windows.net/{entity}/*\")\n",
+							"    \n",
+							"    print(f\"Read completed for {entity} in {source_container} container. Now adding tow metadata columns to {entity}.\")\n",
+							"\n",
+							"    df = add_metadata_columns(df)\n",
+							"    \n",
+							"    print(f\"Metadata columns added successfully. Now writing {entity} to {target_container} container.\")\n",
+							"\n",
+							"    df.write\\\n",
+							"        .format(\"delta\")\\\n",
+							"        .mode(\"overwrite\")\\\n",
+							"        .save(f\"abfss://{target_container}@ecomdevstorage1.dfs.core.windows.net/{entity}/\")\n",
+							"    \n",
+							"    print(f\"Write completed for {entity} in {target_container} container.\")\n",
+							"\n",
+							"print(f\"Data processing completed successfully for all entities: {entities}\")"
+						],
+						"outputs": [],
+						"execution_count": null
+					}
+				]
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/SqlServerMetaTable')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LS_SqlServer1",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "SqlServerTable",
+				"schema": [
+					{
+						"name": "source_container",
+						"type": "nvarchar"
+					},
+					{
+						"name": "source_folders",
+						"type": "nvarchar"
+					},
+					{
+						"name": "target_container",
+						"type": "nvarchar"
+					},
+					{
+						"name": "target_folders",
+						"type": "nvarchar"
+					}
+				],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "meta_ingestion_pl"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/LS_SqlServer1')]"
+			]
+		}
+	]
+}
