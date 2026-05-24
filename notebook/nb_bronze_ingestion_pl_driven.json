@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "9",
 				"spark.dynamicAllocation.maxExecutors": "9",
-				"spark.autotune.trackingId": "7d328758-4882-4371-b795-8a723f17debe"
+				"spark.autotune.trackingId": "04e468df-7708-4db2-bb2a-89679d589fe3"
 			}
 		},
 		"metadata": {
@@ -61,7 +61,7 @@
 					"target_folders = \"customers\"\n",
 					"'''\n",
 					"\n",
-					"print (f\"Data processing started {source_folders}\")\n",
+					"print (f\"Data processing started for: {source_folders}\")\n",
 					"\n",
 					"df = spark.read.format(\"csv\")\\\n",
 					"        .option(\"header\",\"true\")\\\n",
