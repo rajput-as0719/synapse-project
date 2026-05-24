@@ -1,0 +1,17 @@
+{
+	"name": "script_pl_metadata_table",
+	"properties": {
+		"content": {
+			"query": "create table meta_ingestion_pl (\n\tsource_container NVARCHAR(50) NULL,\n\tsource_folders NVARCHAR(50) NULL,\n\ttarget_container NVARCHAR(50) NULL,\n\ttarget_folders NVARCHAR(50) NULL\n)\n\nINSERT INTO meta_ingestion_pl (source_container, source_folders, target_container, target_folders)\nSELECT 'retail-data', 'customers', 'bronze', 'customers' UNION ALL\nSELECT 'retail-data', 'sales', 'bronze', 'sales' UNION ALL\nSELECT 'retail-data', 'sales_orders', 'bronze', 'sales_orders';\nGO\n\nselect * from meta_ingestion_pl\n",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "sql_pool",
+				"poolName": "sql_pool"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}

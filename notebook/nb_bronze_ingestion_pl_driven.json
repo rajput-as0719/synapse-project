@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "9",
 				"spark.dynamicAllocation.maxExecutors": "9",
-				"spark.autotune.trackingId": "106ac4ef-bfcd-4977-8004-28353d119d27"
+				"spark.autotune.trackingId": "7d328758-4882-4371-b795-8a723f17debe"
 			}
 		},
 		"metadata": {
@@ -54,10 +54,12 @@
 					"from pyspark.sql.functions import *\n",
 					"from pyspark.sql.types import *\n",
 					"\n",
+					"'''\n",
 					"source_container = \"retail-data\"\n",
 					"source_folders = \"customers\"\n",
 					"target_container = \"bronze\"\n",
 					"target_folders = \"customers\"\n",
+					"'''\n",
 					"\n",
 					"print (f\"Data processing started {source_folders}\")\n",
 					"\n",
