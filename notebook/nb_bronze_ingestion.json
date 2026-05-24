@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "b0134483-b611-4566-9dd5-70c30504f2ac"
+				"spark.autotune.trackingId": "7c1c93cf-8ef4-47c9-9568-63780c9ac4ef"
 			}
 		},
 		"metadata": {
@@ -57,38 +57,40 @@
 					"from pyspark.sql.functions import *\n",
 					"from pyspark.sql.types import *\n",
 					"\n",
-					"customers_df = spark.read.format(\"csv\")\\\n",
-					"    .option(\"header\",\"true\")\\\n",
-					"    .option(\"inferSchema\",\"true\")\\\n",
-					"    .load(\"abfss://retail-data@ecomdevstorage1.dfs.core.windows.net/customers/*\")\n",
+					"source_container = \"retail-data\"\n",
+					"target_container = \"bronze\"\n",
+					"entities = [\"customers\",\"sales\",\"sales_orders\"]\n",
 					"\n",
-					"display(customers_df)"
+					"def add_metadata_columns(df):\n",
+					"    df = df\\\n",
+					"        .withColumn(\"file_path\", input_file_name())\\\n",
+					"        .withColumn(\"last_updated_ts\", current_timestamp())\n",
+					"    return df\n",
+					"\n",
+					"for entity in entities:\n",
+					"    print (f\"Data processing started for entity: {entity}\")\n",
+					"\n",
+					"    df = spark.read.format(\"csv\")\\\n",
+					"        .option(\"header\",\"true\")\\\n",
+					"        .option(\"inferSchema\",\"true\")\\\n",
+					"        .load(f\"abfss://{source_container}@ecomdevstorage1.dfs.core.windows.net/{entity}/*\")\n",
+					"    \n",
+					"    print(f\"Read completed for {entity} in {source_container} container. Now adding tow metadata columns to {entity}.\")\n",
+					"\n",
+					"    df = add_metadata_columns(df)\n",
+					"    \n",
+					"    print(f\"Metadata columns added successfully. Now writing {entity} to {target_container} container.\")\n",
+					"\n",
+					"    df.write\\\n",
+					"        .format(\"delta\")\\\n",
+					"        .mode(\"overwrite\")\\\n",
+					"        .save(f\"abfss://{target_container}@ecomdevstorage1.dfs.core.windows.net/{entity}/\")\n",
+					"    \n",
+					"    print(f\"Write completed for {entity} in {target_container} container.\")\n",
+					"\n",
+					"print(f\"Data processing completed successfully for all entities: {entities}\")"
 				],
 				"execution_count": 8
-			},
-			{
-				"cell_type": "code",
-				"metadata": {
-					"collapsed": false
-				},
-				"source": [
-					"bronze_df = customers_df\\\n",
-					"    .withColumn(\"file_path\", input_file_name())\\\n",
-					"    .withColumn(\"last_updated_ts\", current_timestamp())\n",
-					"\n",
-					"display(bronze_df)"
-				],
-				"execution_count": 9
-			},
-			{
-				"cell_type": "code",
-				"source": [
-					"bronze_df.write\\\n",
-					"    .format(\"delta\")\\\n",
-					"    .mode(\"overwrite\")\\\n",
-					"    .save(\"abfss://bronze@ecomdevstorage1.dfs.core.windows.net/customers/\")"
-				],
-				"execution_count": 11
 			}
 		]
 	}
